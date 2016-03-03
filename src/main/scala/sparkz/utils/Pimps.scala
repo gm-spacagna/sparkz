@@ -5,7 +5,7 @@ import org.joda.time.DateTime
 
 import scala.reflect.ClassTag
 import scalaz.Scalaz._
-import scalaz._
+import scalaz.{Failure, Success, ValidationNel}
 
 case object Pimps {
 
