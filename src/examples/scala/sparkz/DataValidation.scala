@@ -15,7 +15,7 @@ case object NonRecognizedEventType extends InvalidEventCause
 case object BlackListUser extends InvalidEventCause
 case object NonEligibleUser extends InvalidEventCause
 case object OutOfGlobalIntervalEvent extends InvalidEventCause
-case object BeforeFirstDayToConsiderEvent extends InvalidEventCause
+case object FirstDayToConsiderEvent extends InvalidEventCause
 
 case class InvalidEvent(event: UserEvent, cause: InvalidEventCause)
 
@@ -53,22 +53,22 @@ case object DataValidation {
         OutOfGlobalIntervalEvent
     }
 
-    // max between first time we have ever seen a customer event and the global min date
-    val customersFirstDayToConsiderBV: Broadcast[Map[Long, DateTime]] =
+    // max between first date we have ever seen a customer event and the global min date
+    val customersFirstDayToConsiderBV: Broadcast[Map[Long, LocalDate]] =
       sc.broadcast(
         events.keyBy(_.userId)
-        .mapValues(personalEvent => new DateTime(personalEvent.timestamp))
-        .reduceByKey((date1, date2) => List(date1, date2).minBy(_.getMillis))
-        .mapValues(firstDate => List(firstDate, LocalDate.parse(minDate).toDateTimeAtStartOfDay).maxBy(_.getMillis))
+        .mapValues(personalEvent => new DateTime(personalEvent.timestamp).toLocalDate)
+        .reduceByKey((date1, date2) => List(date1, date2).minBy(_.toDateTimeAtStartOfDay.getMillis))
+        .mapValues(firstDate => List(firstDate, LocalDate.parse(minDate)).maxBy(_.toDateTimeAtStartOfDay.getMillis))
         .collect().toMap
       )
-    val eventIsBeforeFirstDayToConsider: PartialFunction[UserEvent, InvalidEventCause] = {
-      case event if customersFirstDayToConsiderBV.value(event.userId).isAfter(event.timestamp) =>
-        BeforeFirstDayToConsiderEvent
+    val eventIsFirstDayToConsider: PartialFunction[UserEvent, InvalidEventCause] = {
+      case event if customersFirstDayToConsiderBV.value(event.userId).isEqual(event.timestamp.toLocalDate) =>
+        FirstDayToConsiderEvent
     }
     val validationRules: List[PartialFunction[UserEvent, InvalidEventCause]] =
       List(customerNotEligible, notRecognizedEventCode, customerIsInBlackList,
-        eventIsOutOfGlobalInterval.orElse(eventIsBeforeFirstDayToConsider)
+        eventIsOutOfGlobalInterval.orElse(eventIsFirstDayToConsider)
       )
 
     (event: UserEvent) => validationRules.map(_.toFailureNel(event, InvalidEvent(event, _))).reduce(_ |+++| _)
@@ -104,12 +104,12 @@ case object DataValidation {
     .collect().toMap
 
   // This method will return something like:
-  // Map(Set(NonEligibleCustomer, NonRecognizedEventType) -> 1545,
-  // Set(NonEligibleUser) -> 122,
-  // Set(NonEligibleUser, BlackListUser, NonRecognizedEventType) -> 3224,
-  // Set(NonEligibleUser) -> 4,
-  // Set(BeforeFirstDayToConsiderEvent, NonRecognizedEventType) -> 335,
-  // Set(OutOfGlobalIntervalEvent, NonRecognizedEventType) -> 33)
+//   Map(Set(NonEligibleCustomer, NonRecognizedEventType) -> 1545,
+//   Set(NonEligibleUser) -> 122,
+//   Set(NonEligibleUser, BlackListUser, NonRecognizedEventType) -> 3224,
+//   Set(NonEligibleUser) -> 4,
+//   Set(BeforeFirstDayToConsiderEvent, NonRecognizedEventType) -> 335,
+//   Set(OutOfGlobalIntervalEvent, NonRecognizedEventType) -> 33)
   def causeSetToUsersLostCount(events: RDD[UserEvent],
                                validationFunc: UserEvent => ValidationNel[InvalidEvent, UserEvent]): Map[Set[InvalidEventCause], Int] = {
     val survivedUsersBV: Broadcast[Set[Long]] =
