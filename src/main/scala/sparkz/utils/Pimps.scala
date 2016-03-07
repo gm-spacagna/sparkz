@@ -5,6 +5,7 @@ import org.joda.time.DateTime
 
 import scala.reflect.ClassTag
 import scalaz.Scalaz._
+import scalaz.{Failure, Success, ValidationNel}
 
 case object Pimps {
 
@@ -94,5 +95,27 @@ case object Pimps {
     def applyIf(condition: Boolean)(f: RDD[T] => RDD[T]): RDD[T] = if (condition) f(rdd) else rdd
 
     def thenDo[U](f: RDD[T] => U): RDD[T] = f(rdd) |> (_ => rdd)
+  }
+
+  implicit class PimpedPartialFunction[X, E](pf: PartialFunction[X, E]) {
+    def toFailureNel[W](x: X, toW: E => W = identity _): ValidationNel[W, X] =
+      pf.andThen(e => toW(e).failureNel[X]).applyOrElse(x, (_: X).successNel[W])
+
+    def toFailureNel(x: X): ValidationNel[E, X] = toFailureNel(x, identity)
+  }
+
+  implicit class PimpedValidationNel[E, X](x1: ValidationNel[E, X]) {
+    // Extension of scalaz.Validation.+++ operator, does not require the semigroup defined for X
+    def |+++|(x2: ValidationNel[E, X]) = x1 match {
+      case Failure(a1) => x2 match {
+        case Failure(a2) => Failure(a1 append a2)
+        case Success(b2) => x1
+      }
+      case Success(b1) => x2 match {
+        case b2@Failure(_) => b2
+        case Success(b2) if b1 == b2 => Success(b1)
+        case Success(b2) => throw new IllegalArgumentException(s"$b1 not equals to $b2")
+      }
+    }
   }
 }
