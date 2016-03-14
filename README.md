@@ -1,4 +1,5 @@
 # sparkz
+[![Build Status](https://travis-ci.org/gm-spacagna/sparkz.svg?branch=master)](https://travis-ci.org/gm-spacagna/sparkz)
 A proof-of-concept extension to the amazing Spark framework for better functional programming.
 The project aims to extend, and in a few cases re-implement, some of the functionalities and classes in the [Apache Spark](spark.apache.org) framework.
 
