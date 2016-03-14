@@ -11,6 +11,7 @@ Moreover, the project introduces a bunch of util functions, implicits and tutori
 * Integration with sceval for a better binary classification evaluation framework: https://github.com/samthebest/sceval
 * Immutable StatCounter class with defined Monoid
 * Collection of Pimps for daily tasks utils
+* Lazy logger for debug computations
 
 ## WIP
 * Functor for Spark Broadcast
