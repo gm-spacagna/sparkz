@@ -21,4 +21,5 @@ Moreover, the project introduces a bunch of util functions, implicits and tutori
 The original Spark implementations are intentionally not fully functional in order to avoid overloading the garbage collector and have more efficient and mutable data structures. This project is only a proof-of-concept with the goal of inspiring developers, data scientists and engineers to think their design in pure functional terms but does not guarantee better performances. It is strongly encouraged to tailor and tune each component based on your speficif needs.
 
 ## Related projects
-* Frameless: https://github.com/adelbertc/frameless/
+* Frameless: https://github.com/adelbertc/frameless
+* Exploratory Data Analysis: https://github.com/vicpara/exploratory-data-analysis
