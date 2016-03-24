@@ -7,7 +7,7 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 
 case object TermFrequencyTransformer {
-  def apply[Term: ClassTag: Ordering, Features, MetaData](terms: Features => List[Term]) = new SubFeaturesTransformer[List[Term], Features, MetaData] {
+  def apply[Term: ClassTag: Ordering, Features](terms: Features => List[Term]) = new SubFeaturesTransformer[List[Term], Features] {
     def subFeatures(features: Features): List[Term] = terms(features)
 
     def subFeaturesToVector(trainingData: RDD[List[Term]]): (List[Term]) => Vector = {

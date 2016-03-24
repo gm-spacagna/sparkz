@@ -7,8 +7,8 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 
 case object MultiOneHotTransformer {
-  def apply[Key: ClassTag: Ordering, Features, MetaData](attributes: Features => Map[Key, String]) =
-    new SubFeaturesTransformer[Map[Key, String], Features, MetaData] {
+  def apply[Key: ClassTag: Ordering, Features](attributes: Features => Map[Key, String]) =
+    new SubFeaturesTransformer[Map[Key, String], Features] {
       def subFeatures(features: Features): Map[Key, String] = attributes(features)
       def subFeaturesToVector(trainingData: RDD[Map[Key, String]]): (Map[Key, String]) => Vector = {
         val attributeToIndexBV: Broadcast[Map[(Key, String), Int]] = trainingData.context.broadcast(

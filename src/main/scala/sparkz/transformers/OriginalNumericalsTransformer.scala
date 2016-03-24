@@ -7,8 +7,8 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 
 case object OriginalNumericalsTransformer {
-  def apply[Key: ClassTag: Ordering, Features, MetaData](numericals: Features => Map[Key, Double]) =
-    new SubFeaturesTransformer[Map[Key, Double], Features, MetaData] {
+  def apply[Key: ClassTag: Ordering, Features](numericals: Features => Map[Key, Double]) =
+    new SubFeaturesTransformer[Map[Key, Double], Features] {
       def subFeatures(features: Features): Map[Key, Double] = numericals(features)
       def subFeaturesToVector(trainingData: RDD[Map[Key, Double]]): (Map[Key, Double]) => Vector = {
         val keyToIndexBV: Broadcast[Map[Key, Int]] = trainingData.context.broadcast(

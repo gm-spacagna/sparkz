@@ -5,7 +5,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-abstract class SubFeaturesTransformer[SubFeatures: ClassTag, Features, MetaData] extends FeaturesTransformer[Features, MetaData] {
+abstract class SubFeaturesTransformer[SubFeatures: ClassTag, Features] extends FeaturesTransformer[Features] {
   def subFeatures(features: Features): SubFeatures
 
   def subFeaturesToVector(trainingData: RDD[SubFeatures]): SubFeatures => Vector
@@ -17,7 +17,7 @@ abstract class SubFeaturesTransformer[SubFeatures: ClassTag, Features, MetaData]
   }
 }
 
-trait FeaturesTransformer[Features, MetaData] extends Serializable {
+trait FeaturesTransformer[Features] extends Serializable {
   def featuresToVector(trainingData: RDD[Features]): Features => Vector
 }
 
@@ -43,8 +43,8 @@ case object EnsembleTransformer {
   }
 }
 
-case class EnsembleTransformer[Features, MetaData](subTransformer1: SubFeaturesTransformer[_, Features, MetaData],
-                                                   otherSubTransformers: SubFeaturesTransformer[_, Features, MetaData]*) extends FeaturesTransformer[Features, MetaData] {
+case class EnsembleTransformer[Features](subTransformer1: SubFeaturesTransformer[_, Features],
+                                         otherSubTransformers: SubFeaturesTransformer[_, Features]*) extends FeaturesTransformer[Features] {
   def featuresToVector(trainingData: RDD[Features]): Features => Vector = {
     (features: Features) =>
       (subTransformer1 +: otherSubTransformers).map(_.featuresToVector(trainingData))

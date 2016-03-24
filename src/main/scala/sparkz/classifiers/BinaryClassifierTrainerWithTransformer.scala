@@ -8,17 +8,16 @@ import sparkz.transformers.FeaturesTransformer
 import scala.reflect.ClassTag
 
 case object BinaryClassifierTrainerWithTransformer {
-  def labeledPoint[Features: ClassTag, MetaData](featuresWindowWithLabel: FeaturesWithBooleanLabel[Features, MetaData],
-                                                 toVector: Features => Vector): LabeledPoint =
-    featuresWindowWithLabel match {
-      case featuresWithLabel =>
-        LabeledPoint(if (featuresWithLabel.isTrue) 1.0 else 0.0, toVector(featuresWithLabel.features))
-    }
+  def labeledPoint[Features: ClassTag](featuresWindowWithLabel: FeaturesWithBooleanLabel[Features],
+                                       toVector: Features => Vector): LabeledPoint = featuresWindowWithLabel match {
+    case featuresWithLabel =>
+      LabeledPoint(if (featuresWithLabel.isTrue) 1.0 else 0.0, toVector(featuresWithLabel.features))
+  }
 
-  def apply[Features: ClassTag, MetaData](vec2classifier: BinaryClassifierVectorTrainer,
-                                          transformer: FeaturesTransformer[Features, MetaData]): BinaryClassifierTrainer[Features, MetaData] =
-    new BinaryClassifierTrainer[Features, MetaData] {
-      def train(trainingData: RDD[FeaturesWithBooleanLabel[Features, MetaData]]): BinaryClassifierTrainedModel[Features] = {
+  def apply[Features: ClassTag](vec2classifier: BinaryClassifierVectorTrainer,
+                                transformer: FeaturesTransformer[Features]): BinaryClassifierTrainer[Features] =
+    new BinaryClassifierTrainer[Features] {
+      def train(trainingData: RDD[_ <: FeaturesWithBooleanLabel[Features]]): BinaryClassifierTrainedModel[Features] = {
         val toVector = transformer.featuresToVector(trainingData.map(_.features))
 
         val model = vec2classifier.train(trainingData.map(labeledPoint(_, toVector)))

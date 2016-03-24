@@ -8,8 +8,8 @@ trait BinaryClassifierTrainedModel[Features] extends Serializable {
   def score(featuresWindow: Features): Double
 }
 
-trait BinaryClassifierTrainer[Features, MetaData] {
-  def train(trainingData: RDD[FeaturesWithBooleanLabel[Features, MetaData]]): BinaryClassifierTrainedModel[Features]
+trait BinaryClassifierTrainer[Features] {
+  def train(trainingData: RDD[_ <:FeaturesWithBooleanLabel[Features]]): BinaryClassifierTrainedModel[Features]
 }
 
 trait BinaryClassifierTrainedVectorModel extends Serializable {
