@@ -1,4 +1,4 @@
-package sparkz
+package sparkz.examples
 
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD

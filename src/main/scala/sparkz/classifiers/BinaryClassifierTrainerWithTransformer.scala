@@ -1,0 +1,30 @@
+package sparkz.classifiers
+
+import org.apache.spark.mllib.linalg._
+import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.rdd.RDD
+import sparkz.transformers.FeaturesTransformer
+
+import scala.reflect.ClassTag
+
+case object BinaryClassifierTrainerWithTransformer {
+  def labeledPoint[Features: ClassTag, MetaData](featuresWindowWithLabel: FeaturesWithBooleanLabel[Features, MetaData],
+                                                 toVector: Features => Vector): LabeledPoint =
+    featuresWindowWithLabel match {
+      case featuresWithLabel =>
+        LabeledPoint(if (featuresWithLabel.isTrue) 1.0 else 0.0, toVector(featuresWithLabel.features))
+    }
+
+  def apply[Features: ClassTag, MetaData](vec2classifier: BinaryClassifierVectorTrainer,
+                                          transformer: FeaturesTransformer[Features, MetaData]): BinaryClassifierTrainer[Features, MetaData] =
+    new BinaryClassifierTrainer[Features, MetaData] {
+      def train(trainingData: RDD[FeaturesWithBooleanLabel[Features, MetaData]]): BinaryClassifierTrainedModel[Features] = {
+        val toVector = transformer.featuresToVector(trainingData.map(_.features))
+
+        val model = vec2classifier.train(trainingData.map(labeledPoint(_, toVector)))
+        new BinaryClassifierTrainedModel[Features] {
+          def score(featuresWindow: Features): Double = model.score(toVector(featuresWindow))
+        }
+      }
+    }
+}
