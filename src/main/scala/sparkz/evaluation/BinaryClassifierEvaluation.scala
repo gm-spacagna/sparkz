@@ -8,14 +8,14 @@ import scala.reflect.ClassTag
 import scalaz.Scalaz._
 
 object BinaryClassifierEvaluation {
-  def crossValidation[Features, Meta, Order: Ordering : ClassTag, UniqueKey: ClassTag](data: RDD[FeaturesWithBooleanLabel[Features] with MetaData[Meta]],
-                                                                                       k: Int,
-                                                                                       classifier: BinaryClassifierTrainer[Features],
-                                                                                       uniqueId: Meta => UniqueKey,
-                                                                                       orderingField: Meta => Order,
-                                                                                       singleInference: Boolean = true,
-                                                                                       seed: Long = 12345L)
-                                                                                      (implicit logger: AppLogger = AppLogger.infoLevel()): RDD[(FeaturesWithBooleanLabel[Features] with MetaData[Meta], Double)] =
+  def crossValidationScores[Features, Meta, Order: Ordering : ClassTag, UniqueKey: ClassTag](data: RDD[FeaturesWithBooleanLabel[Features] with MetaData[Meta]],
+                                                                                             k: Int,
+                                                                                             classifiers: List[BinaryClassifierTrainer[Features]],
+                                                                                             uniqueId: Meta => UniqueKey,
+                                                                                             orderingField: Meta => Order,
+                                                                                             singleInference: Boolean = true,
+                                                                                             seed: Long = 12345L)
+                                                                                            (implicit logger: AppLogger = AppLogger.infoLevel()): Map[BinaryClassifierTrainer[Features], RDD[(FeaturesWithBooleanLabel[Features] with MetaData[Meta], Double)]] =
     (for {
       i <- 0 until k
       otherFolds = data.filter(_.metaData |> uniqueId |> (_.hashCode() % k == i))
@@ -39,9 +39,9 @@ object BinaryClassifierEvaluation {
         .values
       else holdoutFoldAfterSplit
 
+      classifier <- classifiers
       model = classifier.train(trainingData)
-    } yield testData -> model).map {
-      case (testData, model) => testData.map(testRecord => testRecord -> model.score(testRecord.features))
-    }
-    .reduce(_ ++ _)
+      scores = testData.map(testRecord => testRecord -> model.score(testRecord.features))
+    } yield classifier -> scores)
+    .groupBy(_._1).mapValues(_.map(_._2).reduce(_ ++ _))
 }

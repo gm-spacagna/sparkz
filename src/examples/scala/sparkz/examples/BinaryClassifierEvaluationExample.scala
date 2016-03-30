@@ -14,30 +14,47 @@ case class UserFeaturesWithBooleanLabel(features: UserFeatures,
                                         isTrue: Boolean) extends FeaturesWithBooleanLabel[UserFeatures] with MetaData[UserInfo]
 
 object BinaryClassifierEvaluationExample {
-  def auc(data: RDD[(FeaturesWithBooleanLabel[UserFeatures] with MetaData[UserInfo])]): Double = {
+  def auc(data: RDD[(FeaturesWithBooleanLabel[UserFeatures] with MetaData[UserInfo])]): Map[BinaryClassifierTrainer[UserFeatures], Double] = {
 
-    val vectorClassifier: BinaryClassifierVectorTrainer =
+    val vecDecisionTreeClassifier: BinaryClassifierVectorTrainer =
       DecisionTreeClassifierTrainer(impurity = "gini", maxDepth = 5, maxBins = 32)
 
     val eventsSubTransformer = TermFrequencyTransformer[String, UserFeatures](_.events)
     val categoriesSubTransformer = MultiOneHotTransformer[String, UserFeatures](_.attributes)
     val numericalsSubTransformer = OriginalNumericalsTransformer[String, UserFeatures](_.numericals)
 
-    val classifier: BinaryClassifierTrainer[UserFeatures] = BinaryClassifierTrainerWithTransformer(
-      vec2classifier = vectorClassifier,
-      transformer = EnsembleTransformer(eventsSubTransformer, categoriesSubTransformer, numericalsSubTransformer)
+    val classifiers: List[BinaryClassifierTrainer[UserFeatures]] = List(
+      RandomBinaryClassifierTrainer(),
+      BinaryClassifierTrainerWithTransformer(
+        vec2classifier = vecDecisionTreeClassifier,
+        transformer = eventsSubTransformer
+      ),
+      BinaryClassifierTrainerWithTransformer(
+        vec2classifier = vecDecisionTreeClassifier,
+        transformer = categoriesSubTransformer
+      ),
+      BinaryClassifierTrainerWithTransformer(
+        vec2classifier = vecDecisionTreeClassifier,
+        transformer = numericalsSubTransformer
+      ),
+      BinaryClassifierTrainerWithTransformer(
+        vec2classifier = vecDecisionTreeClassifier,
+        transformer = EnsembleTransformer(eventsSubTransformer, categoriesSubTransformer, numericalsSubTransformer)
+      )
     )
 
-    BinaryClassifierEvaluation.crossValidation(
+    BinaryClassifierEvaluation.crossValidationScores(
       data = data,
       k = 10,
-      classifier = classifier,
+      classifiers = classifiers,
       uniqueId = (_: UserInfo).customerId,
       orderingField = (_: UserInfo).date.toDateTimeAtStartOfDay.getMillis,
       singleInference = true
-    ).map {
-      case (features, score) => score -> features.isTrue
-    }
-    .confusions().areaUnderROC
+    ).mapValues(
+      _.map {
+        case (features, score) => score -> features.isTrue
+      }
+      .confusions().areaUnderROC
+    )
   }
 }
