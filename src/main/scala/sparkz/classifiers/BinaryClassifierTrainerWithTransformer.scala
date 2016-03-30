@@ -8,8 +8,8 @@ import sparkz.transformers.FeaturesTransformer
 import scala.reflect.ClassTag
 
 case object BinaryClassifierTrainerWithTransformer {
-  def labeledPoint[Features: ClassTag](featuresWindowWithLabel: FeaturesWithBooleanLabel[Features],
-                                       toVector: Features => Vector): LabeledPoint = featuresWindowWithLabel match {
+  def labeledPoint[Features: ClassTag](featuresWithBooleanLabel: FeaturesWithBooleanLabel[Features],
+                                       toVector: Features => Vector): LabeledPoint = featuresWithBooleanLabel match {
     case featuresWithLabel =>
       LabeledPoint(if (featuresWithLabel.isTrue) 1.0 else 0.0, toVector(featuresWithLabel.features))
   }
