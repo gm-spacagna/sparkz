@@ -4,7 +4,7 @@
 A proof-of-concept extension to the amazing Spark framework for better functional programming.
 The project aims to extend, and in a few cases re-implement, some of the functionalities and classes in the [Apache Spark](spark.apache.org) framework.
 
-The main motivation is to make statically typed the APIs of some ML componenets avoiding to use DataFrame, to provide the missing functional structures of some components (Broadcast variables, data validation pipelines, utility classes...) and to work around the unnecessary limitations imposed by private fields/methods.
+The main motivation is to make statically typed the APIs of some Machine Learning componenets, to provide the missing functional structures of some classes (Broadcast variables, data validation pipelines, utility classes...) and to work around the unnecessary limitations imposed by private fields/methods.
 Moreover, the project introduces a bunch of util functions, implicits and tutorials to show the power, conciseness and elegance of the Spark framework when combined with a fully functional design.
 
 ## Current features
