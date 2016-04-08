@@ -1,6 +1,7 @@
 package sparkz.evaluation
 
 import org.apache.spark.rdd.RDD
+import org.apache.spark.rdd.RDD._
 
 import scalaz.Scalaz._
 
