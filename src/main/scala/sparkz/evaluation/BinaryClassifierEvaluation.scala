@@ -8,14 +8,14 @@ import scala.reflect.ClassTag
 import scalaz.Scalaz._
 
 object BinaryClassifierEvaluation {
-  def crossValidationScores[Features, Meta, Order: Ordering : ClassTag, UniqueKey: ClassTag](data: RDD[FeaturesWithBooleanLabel[Features] with MetaData[Meta]],
-                                                                                             k: Int,
-                                                                                             classifiers: List[BinaryClassifierTrainer[Features]],
-                                                                                             uniqueId: Meta => UniqueKey,
-                                                                                             orderingField: Meta => Order,
-                                                                                             singleInference: Boolean = true,
-                                                                                             seed: Long = 12345L)
-                                                                                            (implicit logger: AppLogger = AppLogger.infoLevel()): Map[BinaryClassifierTrainer[Features], RDD[(FeaturesWithBooleanLabel[Features] with MetaData[Meta], Double)]] =
+  def crossValidationScores[Features, Meta, Order: Ordering : ClassTag, UniqueKey: ClassTag]
+  (data: RDD[FeaturesWithBooleanLabel[Features] with MetaData[Meta]],
+   k: Int,
+   classifiers: List[BinaryClassifierTrainer[Features]],
+   uniqueId: Meta => UniqueKey,
+   orderingField: Meta => Order,
+   singleInference: Boolean = true,
+   seed: Long = 12345L): Map[BinaryClassifierTrainer[Features], RDD[(FeaturesWithBooleanLabel[Features] with MetaData[Meta], Double)]] =
     (for {
       i <- 0 until k
       otherFolds = data.filter(_.metaData |> uniqueId |> (_.hashCode() % k == i))

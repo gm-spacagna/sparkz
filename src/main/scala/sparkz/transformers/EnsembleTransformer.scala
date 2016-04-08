@@ -5,6 +5,10 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
+trait FeaturesTransformer[Features] extends Serializable {
+  def featuresToVector(trainingData: RDD[Features]): Features => Vector
+}
+
 abstract class SubFeaturesTransformer[SubFeatures: ClassTag, Features] extends FeaturesTransformer[Features] {
   def subFeatures(features: Features): SubFeatures
 
@@ -15,10 +19,6 @@ abstract class SubFeaturesTransformer[SubFeatures: ClassTag, Features] extends F
 
     (features: Features) => toVector(subFeatures(features))
   }
-}
-
-trait FeaturesTransformer[Features] extends Serializable {
-  def featuresToVector(trainingData: RDD[Features]): Features => Vector
 }
 
 case object EnsembleTransformer {
