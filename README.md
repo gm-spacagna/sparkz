@@ -14,10 +14,11 @@ Moreover, the project introduces a bunch of util functions, implicits and tutori
 * Immutable StatCounter class with defined Monoid
 * Collection of Pimps for daily tasks utils
 * Lazy logger for debug computations
+* Transformer -> Trainer -> Model -> Evaluation functional framework for machine learning algorithms (similar to ML pipeline but typed and functional): https://datasciencevademecum.wordpress.com/2016/04/12/robust-and-declarative-machine-learning-pipelines-for-predictive-buyin/
 
 ## WIP
 * Functor for Spark Broadcast
-* Transformer -> Trainer -> Model -> Evaluation functional framework for machine learning algorithms (similar to ML pipeline but typed and functional)
+
  
 ## Limitations
 The original Spark implementations are intentionally not fully functional in order to avoid overloading the garbage collector and have more efficient and mutable data structures. This project is only a proof-of-concept with the goal of inspiring developers, data scientists and engineers to think their design in pure functional terms but does not guarantee better performances. It is strongly encouraged to tailor and tune each component based on your speficif needs.
