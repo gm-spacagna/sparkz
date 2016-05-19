@@ -18,7 +18,7 @@ Maven:
 
 sbt:
 
-    "com.github.gm-spacagna" & "sparkz_2.10" & "0.1.0"
+    "com.github.gm-spacagna" % "sparkz_2.10" % "0.1.0"
 
 ## Current features
 
