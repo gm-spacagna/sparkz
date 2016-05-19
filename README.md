@@ -7,6 +7,19 @@ The project aims to extend, and in a few cases re-implement, some of the functio
 The main motivation is to make statically typed the APIs of some Machine Learning components, to provide the missing functional structures of some classes (Broadcast variables, data validation pipelines, utility classes...) and to work around the unnecessary limitations imposed by private fields/methods.
 Moreover, the project introduces a bunch of util functions, implicits and tutorials to show the power, conciseness and elegance of the Spark framework when combined with a fully functional design.
 
+## Sonatype dependency
+Maven:
+
+    <dependency>
+      <groupId>com.github.gm-spacagna</groupId>
+      <artifactId>sparkz_2.10</artifactId>
+      <version>0.1.0</version>
+    </dependency>
+
+sbt:
+
+    "com.github.gm-spacagna" & "sparkz_2.10" & "0.1.0"
+
 ## Current features
 
 * Functional Data Validation using monads and applicative functors: https://datasciencevademecum.wordpress.com/2016/03/09/functional-data-validation-using-monads-and-applicative-functors/
